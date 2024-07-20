@@ -1,0 +1,102 @@
+#include "signupwindow.h"
+#include <QCoreApplication>
+#include <QApplication>
+#include <QFile>
+#include <QTextStream>
+#include <QDebug>
+#include <patient.h>
+
+// Function to write patient data to file
+void writePatientsToFile(const std::map<int, Patient>& patients, const QString& filePath) {
+    QFile file(filePath);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "Could not open file for writing";
+        return;
+    }
+
+    QTextStream out(&file);
+
+    // Iterate over each patient in the map
+    for (const auto& patient : patients) {
+        // Write patient data to the file
+        out << patient.second.getUsername() << "\n";
+        out << patient.second.getPassword() << "\n";
+        out << patient.second.getId() << "\n";
+        // You can include other patient data here if needed
+        out << "\n";
+    }
+
+    file.close();
+
+    qDebug() << "Data has been written to file successfully.";
+}
+
+// Function to add a new patient to the map
+void addPatient(std::map<int, Patient>& patients, const QString& username, const QString& password) {
+    // Generate a unique ID
+    int id = patients.size() + 1;
+
+    // Create a new Patient object and insert it into the map
+    Patient newPatient(username, password, id, "");
+    patients[id] = newPatient;
+}
+
+// Function to load patient data from file and populate the map
+void loadPatientsFromFile(std::map<int, Patient>& patients, const QString& filePath) {
+    QFile file(filePath);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Could not open file for reading";
+        return;
+    }
+
+    QTextStream in(&file);
+
+    while (!in.atEnd()) {
+        QString username = in.readLine();
+        QString password = in.readLine();
+        QString idStr = in.readLine();
+        int id = idStr.toInt();
+
+        // Create a new Patient object and insert it into the map
+        Patient newPatient(username, password, id, "");
+        patients[id] = newPatient;
+
+        // Skip the empty line
+        in.readLine();
+    }
+
+    file.close();
+
+    qDebug() << "Data has been loaded from file successfully.";
+}
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    QString filePath = "C:/Users/Sama/Downloads/System (1)/HospitalSystem/data.txt";
+
+    std::map<int, Patient> patients;
+
+    // Load patient data from file
+    loadPatientsFromFile(patients, filePath);
+
+    // Create SignUpWindow instance and pass the patients map by reference
+    SignUpWindow w;
+    w.setPatientsMap(patients); // Set the patients map by reference
+    w.show();
+
+    // Connect the signal from SignUpWindow to add a new patient
+    QObject::connect(&w, &SignUpWindow::addNewPatient, [&](const QString& username, const QString& password){
+        // Generate a unique ID
+        int id = patients.size() + 1;
+
+        addPatient(patients, username, password);
+
+        // Write patient data back to file after adding the new patient
+        writePatientsToFile(patients, filePath);
+    });
+
+    return a.exec();
+}

@@ -1,0 +1,92 @@
+#include "signupwindow.h"
+#include <QApplication>
+#include <QFile>
+#include <QTextStream>
+#include <QDebug>
+#include <QMap>
+#include "patient.h"
+
+void writePatientsToFile(const QMap<int, Patient>& patients, const QString& filePath) {
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "Could not open file for writing";
+        return;
+    }
+    QTextStream out(&file);
+    for (const auto& patient : patients) {
+        const Patient& p = patient;
+        out << p.getUsername() << "," << p.getPassword() << ","
+            << p.getId() << ",";
+        if (!p.viewMedicalRecords().isEmpty()) {
+            out << p.viewMedicalRecords();
+        }
+        out << "," << p.getTestResults() << "," << p.getTreatmentPlans() << ","
+            << p.getAge() << "," << p.getGender() << ",";
+        for(const QString& appointment : p.getAppointments()) {
+            out << appointment << ";";
+        }
+        out << "\n";
+    }
+    file.close();
+    qDebug() << "Data has been written to file successfully.";
+}
+
+
+
+void loadPatientsFromFile(QMap<int, Patient>& patients, const QString& filePath) {
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Could not open file for reading";
+        return;
+    }
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        QStringList parts = line.split(',');
+        if (parts.size() < 9) continue; // Skip invalid lines
+        QString username = parts[0];
+        QString password = parts[1];
+        int id = parts[2].toInt();
+        QString medicalRecord = parts[3];
+        QString testResults = parts[4];
+        QString treatmentPlans = parts[5];
+        int age = parts[6].toInt(); // Parse age
+        QString gender = parts[7];  // Gender
+        QStringList appointments = parts[8].split(';');
+        // Remove the last empty element from the appointments list
+        if (appointments.size() > 0 && appointments.last().isEmpty()) {
+            appointments.removeLast();
+        }
+        Patient newPatient(username, password, id, medicalRecord, gender, age);
+        newPatient.setTestResults(testResults);
+        newPatient.setTreatmentPlans(treatmentPlans);
+        for(const QString& appointment : appointments) {
+            newPatient.requestAppointment(appointment);
+        }
+        patients.insert(id, newPatient);
+    }
+    file.close();
+    qDebug() << "Data has been loaded from file successfully.";
+}
+
+
+void addPatient(QMap<int, Patient>& patients, const QString& username, const QString& password, int age, const QString& gender) {
+    int id = patients.size() + 1;
+    Patient newPatient(username, password, id, "", gender, age);
+    patients.insert(id, newPatient);
+}
+
+int main(int argc, char *argv[]) {
+    QApplication a(argc, argv);
+    QString filePath = "C:\\Users\\Sama\\Downloads\\projectrrrrrrrrrrrr\\projectrrrrrrrrrrrr\\System (1)\\HospitalSystem\\data.txt";
+    QMap<int, Patient> patients;
+    loadPatientsFromFile(patients, filePath);
+    SignUpWindow w(patients);
+    w.show();
+    QObject::connect(&w, &SignUpWindow::addNewPatient, [&](const QString& username, const QString& password, int age, const QString& gender){
+        int id = patients.size() + 1;
+        addPatient(patients, username, password, age, gender);
+        writePatientsToFile(patients, filePath);
+    });
+    return a.exec();
+}

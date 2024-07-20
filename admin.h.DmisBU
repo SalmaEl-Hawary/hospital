@@ -1,0 +1,25 @@
+// admin.h
+#ifndef ADMIN_H
+#define ADMIN_H
+
+#include <QString>
+#include <QMap>
+#include <QVector>
+
+class Admin
+{
+public:
+    explicit Admin(const QString& username, const QString& password);
+    ~Admin();
+
+private:
+    QString username;
+    QString password;
+    QVector<QString> patients; // Using QVector for storing patient names
+    QMap<QString, QString> staff;
+
+    // Other private member variables
+
+};
+
+#endif // ADMIN_H

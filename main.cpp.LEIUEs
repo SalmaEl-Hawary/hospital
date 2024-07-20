@@ -1,0 +1,53 @@
+#include <QCoreApplication>
+#include <QApplication>
+#include <QFile>
+#include <QTextStream>
+#include <QDebug>
+#include <patient.h>
+#include <loginwindow.h>.h>
+// Function to write patient data to file
+void writePatientsToFile(const std::map<int, Patient>& patients, const QString& filePath) {
+    QFile file(filePath);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "Could not open file for writing";
+        return;
+    }
+
+    QTextStream out(&file);
+
+    // Iterate over each patient in the map
+    for (const auto& patient : patients) {
+        // Write patient data to the file
+        out << "Username: " << patient.second.getUsername() << "\n";
+        out << "Password: " << patient.second.getPassword() << "\n";
+        out << "ID: " << patient.second.getId() << "\n";
+        out << "Medical Records: " << "\n";
+        out << "Appointments:\n";
+        // for (const auto& appointment : patient.second.getAppointments()) {
+        //     out << appointment << "\n";
+        // }
+        out << "\n";
+    }
+
+    file.close();
+
+    qDebug() << "Data has been written to file successfully.";
+}
+
+int main(int argc, char *argv[])
+{
+    QString filePath = "C:/Users/Sama/Downloads/System (1)/HospitalSystem/data.txt";
+
+    std::map<int, Patient> patients;
+
+    // Perform operations on patients map...
+
+    // Write patient data back to file
+    writePatientsToFile(patients, filePath);
+
+    QApplication a(argc, argv);
+    LoginWindow w;
+    w.show();
+    return a.exec();
+}

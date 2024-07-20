@@ -1,0 +1,59 @@
+#include "signupwindow.h"
+#include <QCoreApplication>
+#include <QApplication>
+#include <QFile>
+#include <QTextStream>
+#include <QDebug>
+#include <patient.h>
+
+// Function to write patient data to file
+void writePatientsToFile(const std::map<int, Patient>& patients, const QString& filePath) {
+    QFile file(filePath);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qDebug() << "Could not open file for writing";
+        return;
+    }
+
+    QTextStream out(&file);
+
+    // Iterate over each patient in the map
+    for (const auto& patient : patients) {
+        // Write patient data to the file
+        out << "Username: " << patient.second.getUsername() << "\n";
+        out << "Password: " << patient.second.getPassword() << "\n";
+        out << "ID: " << patient.second.getId() << "\n";
+        out << "Medical Records: " << "\n";
+        out << "Appointments:\n";
+        // for (const auto& appointment : patient.second.getAppointments()) {
+        //     out << appointment << "\n";
+        // }
+        out << "\n";
+    }
+
+    file.close();
+
+    qDebug() << "Data has been written to file successfully.";
+}
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    QString filePath = "C:/Users/Sama/Downloads/System (1)/HospitalSystem/data.txt";
+
+    std::map<int, Patient> patients;
+
+    // Add some sample patients to the map
+    patients[1] = Patient("John", "password1", 1, "");
+    patients[2] = Patient("Alice", "password2", 2, "");
+
+    // Create SignUpWindow instance and pass the patients map by reference
+    SignUpWindow w;
+    w.setPatientsMap(patients); // Set the patients map by reference
+    w.show();
+
+    // Write patient data back to file
+    writePatientsToFile(patients, filePath);
+
+    return a.exec();
+}

@@ -1,0 +1,36 @@
+// patient.h
+#ifndef PATIENT_H
+#define PATIENT_H
+
+#include <QString>
+#include <vector>
+
+class Patient
+{
+public:
+    explicit Patient(const QString& username, const QString& password, int id, const QString& medicalRecords);
+    Patient();
+    ~Patient();
+
+    // Patient functionalities
+    void requestAppointment(const QString& date);
+    void cancelAppointment(const QString& date);
+    void viewMedicalRecords() const;
+
+    // Getters
+    QString getUsername() const;
+    QString getPassword() const;
+    int getId() const;
+
+private:
+    QString username;
+    QString password;
+    int id;
+    QString medicalRecords;
+    std::vector<QString> appointments;
+
+    // Other private member variables
+
+};
+
+#endif // PATIENT_H

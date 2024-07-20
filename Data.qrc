@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/Systemdata">
+        <file>Systemdata/data.txt</file>
+        <file>Systemdata/adminsdata.txt</file>
+        <file>Systemdata/staffdata.txt</file>
+    </qresource>
+</RCC>
